@@ -19,6 +19,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import br.com.alura.spring.data.model.Cargo;
 import br.com.alura.spring.data.model.Funcionario;
+import br.com.alura.spring.data.model.FuncionarioProjecaoInterface;
 import br.com.alura.spring.data.model.UnidadeDeTrabalho;
 import br.com.alura.spring.data.service.CargoService;
 import br.com.alura.spring.data.service.FuncionarioService;
@@ -39,46 +40,69 @@ public class CursoAluraSpringDataApplication implements CommandLineRunner{
 	}
 
 	@Override
-	@Transactional
+	@Transactional //para adicionar lista de Funcionários
 	public void run(String... args) throws Exception {
 		
 		int opcao = 2;
 		
 		switch (opcao) {
-			case 1: {
-				
+			case 1: { 
 				//Teste Cargos
-				adicionarCargos();
+				
+				//Utilização de: "Save" do Spring Data
+				adicionarCargos(); 
+				
+				//Utilização de: "Save" do Spring Data
 				atualizarCargo(1L, "ALTERADO");
+				
+				//Utilização de: "deleteById" do Spring Data
 				deletarCargoPorID(1L);
+				
+				//Utilização de: findAll do Spring Data
 				listarTodosCargosSemTrazerFuncionarios();
+				
 				break;
 				
 			}
-			case 2: {
-				
+			case 2: { 
 				//Teste Funcionarios
+				
+				//Utilização de: "Save" do Spring Data
 				adicionarFuncionariosComCargoEUnidade();
-				//listarFuncionariosComUnidades();
-				listarFuncionariosPaginado(1); //pg desejada
-				//buscarFuncionarioPorNome("Lucas");
-				//findByNomeAndSalarioGreaterThanAndDataContratacao("Lucas", new BigDecimal(5000), LocalDate.now());
-				//buscarFuncionarioPorNomeSalarioMaiorEDataContratacao("Lucas", new BigDecimal(5000), LocalDate.now());
-				//nativeQueryBuscarFuncionarioPorDataContratMaior(LocalDate.now().minusDays(1L));
+				
+				//Utilização de: "findAll" (Unidade é EAGER)
+				listarFuncionariosComUnidades(); 
+				
+				//Utilização de: Paginação utilizando "findAll" com parâmetro "Sort"
+//				listarFuncionariosPaginadosOrdenadosPorNome(0); //pg desejada
+//				listarFuncionariosPaginadosOrdenadosPorNome(1); //pg desejada
+//				listarFuncionariosPaginadosOrdenadosPorNome(2); //pg desejada
+//				listarFuncionariosPaginadosOrdenadosPorNome(3); //pg desejada
+//				listarFuncionariosPaginadosOrdenadosPorNome(4); //pg desejada
+				
+				//Utilização de: Derivated Query com "by"
+				buscarFuncionarioPorNome("Lucas"); 
+				
+				//Utilização de: Derivated Query com composição de critérios
+				findByNomeAndSalarioGreaterThanAndDataContratacao("Lucas", new BigDecimal(5000), LocalDate.now()); 
+				
+				//Utilização de: JPQL
+				buscarFuncionarioPorNomeSalarioMaiorEDataContratacao("Lucas", new BigDecimal(5000), LocalDate.now());
+				
+				//Utilização de: Native Query que retorna tabela que corresponde a UMA entidade
+				nativeQueryBuscarFuncionarioPorDataContratMaior(LocalDate.now().minusDays(1L));
+				
+				//Utilização de: Projection (entidade contendo atributos selecionados para um relatório)
+				buscarFuncionarioESalarioParaRelatorio();
+				
+				//Utilização de: Specification
+				buscaFuncionarioComNomeDinamico("Lucas");
 				
 				break;
-				
-			}
-			case 3: {
-				
 			}
 			default:
-			
 		}
-		
-		
 	}
-	
 	
 	//------------------ Funções de Funcionários --------------------
 	
@@ -113,9 +137,7 @@ public class CursoAluraSpringDataApplication implements CommandLineRunner{
 		listaUnidadesDeTrabalho.add(unidade1);
 		listaUnidadesDeTrabalho.add(unidade2);
 		listaUnidadesDeTrabalho.add(unidade3);
-		
 
-		
 		this.funcionarioService.adicionarFuncionario(new Funcionario("Lucas", "01127022016", new BigDecimal(8000), 
 				LocalDate.now(), cargoProgramador, listaUnidadesDeTrabalho)); 
 		
@@ -185,7 +207,6 @@ public class CursoAluraSpringDataApplication implements CommandLineRunner{
 		System.out.println("Funcionario encontrado: " + funcionario.getNome());	
 	}
 	
-	
 	private void nativeQueryBuscarFuncionarioPorDataContratMaior(LocalDate dataContrat) {
 		Funcionario funcionario = this.funcionarioService.nativeQueryBuscarFuncionarioPorDataContratMaior(dataContrat);
 		
@@ -193,9 +214,9 @@ public class CursoAluraSpringDataApplication implements CommandLineRunner{
 	}
 	
 	//retorna uma página contendo 2 registros
-	private void listarFuncionariosPaginado(int pgDesejada) {
+	private void listarFuncionariosPaginadosOrdenadosPorNome(int pgDesejada) {
 		
-		Page<Funcionario> paginaFuncionarios = this.funcionarioService.listarFuncionariosPaginado(pgDesejada);
+		Page<Funcionario> paginaFuncionarios = this.funcionarioService.listarFuncionariosPaginadosOrdenadosPorNome(pgDesejada);
 		
 		paginaFuncionarios.forEach(funcionario -> {
 			System.out.println("Nome: " + funcionario.getNome());
@@ -203,7 +224,30 @@ public class CursoAluraSpringDataApplication implements CommandLineRunner{
 		
 	}
 	
-
+	private void buscarFuncionarioESalarioParaRelatorio() {
+		List<FuncionarioProjecaoInterface> listaFuncionarioRelatorio = this.
+				funcionarioService.buscarFuncionarioESalarioParaRelatorio();
+	
+		listaFuncionarioRelatorio.forEach(funcionario -> {
+			System.out.println("ID :" + funcionario.getId());
+			System.out.println("Nome: " + funcionario.getNome());
+			System.out.println("Salário: " + funcionario.getSalario());
+			System.out.println();
+		});
+	}
+	
+	private void buscaFuncionarioComNomeDinamico(String nome) {
+		List<Funcionario> listaFuncionarios =  this.funcionarioService.
+													buscaFuncionarioComNomeDinamico(nome);
+		
+		listaFuncionarios.forEach(funcionario -> {
+			System.out.println("ID :" + funcionario.getId());
+			System.out.println("Nome: " + funcionario.getNome());
+			System.out.println("Salário: " + funcionario.getSalario());
+			System.out.println();
+		});
+	
+	}
 	
 	//------------------ Funções de Cargos --------------------
 	
@@ -255,5 +299,4 @@ public class CursoAluraSpringDataApplication implements CommandLineRunner{
 	private void deletarCargoPorID(Long id) {
 		cargoService.apagarPorID(id);
 	}
-
 }

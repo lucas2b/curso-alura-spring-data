@@ -2,6 +2,7 @@ package br.com.alura.spring.data.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 import javax.transaction.Transactional;
 
@@ -9,11 +10,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 
 import br.com.alura.spring.data.model.Funcionario;
+import br.com.alura.spring.data.model.FuncionarioProjecaoInterface;
 import br.com.alura.spring.data.repository.FuncionarioRepository;
+import br.com.alura.spring.data.specification.FuncionarioSpecification;
 
 @Service
 public class FuncionarioService {
@@ -52,11 +56,26 @@ public class FuncionarioService {
 		return this.funcionarioRepository.nativeQueryBuscarFuncionarioPorDataContratMaior(dataContrat);
 	}
 	
-	public Page<Funcionario> listarFuncionariosPaginado(int pgDesejada) {
+	public Page<Funcionario> listarFuncionariosPaginadosOrdenadosPorNome(int pgDesejada) {
 		
-		Pageable pagina = PageRequest.of(pgDesejada, 2, Sort.unsorted()); //página desejada, define o número de registros por página
+		Pageable pagina = PageRequest.of(pgDesejada, 2, Sort.by(Sort.Direction.ASC, "nome")); 
+										//página desejada, define o número de registros por página, ordenação
 		
 		return this.funcionarioRepository.findAll(pagina);
 	}
+	
+	public List<FuncionarioProjecaoInterface> buscarFuncionarioESalarioParaRelatorio() {
+		return this.funcionarioRepository.buscarFuncionarioESalarioParaRelatorio();
+	}
+	
+	//Busca funcionário com nome dinamicamente, caso passe o nome realiza o filtro
+	//Caso não passe o nome, traz todos funcionários
+	public List<Funcionario> buscaFuncionarioComNomeDinamico(String nome) {
+		
+		return this.funcionarioRepository.
+				findAll(Specification.where(FuncionarioSpecification.nome(nome)));
+	}
 
+	
+	
 }

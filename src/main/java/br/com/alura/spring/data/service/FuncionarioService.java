@@ -19,7 +19,7 @@ import br.com.alura.spring.data.model.FuncionarioProjecaoInterface;
 import br.com.alura.spring.data.repository.FuncionarioRepository;
 import br.com.alura.spring.data.specification.FuncionarioSpecification;
 
-@Service
+@Service //anotação que permite a injeção de dependência
 public class FuncionarioService {
 	
 	private final FuncionarioRepository funcionarioRepository;
@@ -68,12 +68,18 @@ public class FuncionarioService {
 		return this.funcionarioRepository.buscarFuncionarioESalarioParaRelatorio();
 	}
 	
-	//Busca funcionário com nome dinamicamente, caso passe o nome realiza o filtro
-	//Caso não passe o nome, traz todos funcionários
-	public List<Funcionario> buscaFuncionarioComNomeDinamico(String nome) {
+	//Busca funcionário com parametros de entrada dinamicamente
+	public List<Funcionario> buscaFuncionarioComParametrosDinamicos(String nome, String cpf, 
+			BigDecimal salario, LocalDate dataContratacao) {
 		
 		return this.funcionarioRepository.
-				findAll(Specification.where(FuncionarioSpecification.nome(nome)));
+				findAll(Specification
+					.where(
+						FuncionarioSpecification.nome(nome))
+						.or(Specification.where(FuncionarioSpecification.cpf(cpf)))
+						.or(Specification.where(FuncionarioSpecification.salario(salario)))
+						.or(Specification.where(FuncionarioSpecification.dataContratacao(dataContratacao)))
+					);
 	}
 
 	

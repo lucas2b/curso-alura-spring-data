@@ -30,10 +30,10 @@ import br.com.alura.spring.data.service.FuncionarioService;
 public class CursoAluraSpringDataApplication implements CommandLineRunner{
 	
 	@Autowired
-	private CargoService cargoService;
-	
+	private CargoService cargoService; //injeção de dependência
+	 
 	@Autowired
-	private FuncionarioService funcionarioService;
+	private FuncionarioService funcionarioService; //injeção de dependência
 
 	public static void main(String[] args) {
 		SpringApplication.run(CursoAluraSpringDataApplication.class, args);
@@ -90,13 +90,13 @@ public class CursoAluraSpringDataApplication implements CommandLineRunner{
 				buscarFuncionarioPorNomeSalarioMaiorEDataContratacao("Lucas", new BigDecimal(5000), LocalDate.now());
 				
 				//Utilização de: Native Query que retorna tabela que corresponde a UMA entidade
-				nativeQueryBuscarFuncionarioPorDataContratMaior(LocalDate.now().minusDays(1L));
+				//nativeQueryBuscarFuncionarioPorDataContratMaior(LocalDate.now().minusDays(1L));
 				
 				//Utilização de: Projection (entidade contendo atributos selecionados para um relatório)
 				buscarFuncionarioESalarioParaRelatorio();
 				
 				//Utilização de: Specification
-				buscaFuncionarioComNomeDinamico("Lucas");
+				buscaFuncionarioComNomeDinamico("Lucas", "01127022016", null, null);
 				
 				break;
 			}
@@ -148,7 +148,7 @@ public class CursoAluraSpringDataApplication implements CommandLineRunner{
 
 		
 		this.funcionarioService.
-		adicionarFuncionario(new Funcionario("Celso", "01127022016", new BigDecimal(8000), 
+		adicionarFuncionario(new Funcionario("Celso", "4128941820", new BigDecimal(8000), 
 				LocalDate.now(), cargoVendedor, listaUnidadesDeTrabalho));
 		
 		this.funcionarioService.
@@ -236,9 +236,13 @@ public class CursoAluraSpringDataApplication implements CommandLineRunner{
 		});
 	}
 	
-	private void buscaFuncionarioComNomeDinamico(String nome) {
+	private void buscaFuncionarioComNomeDinamico(String nome, String cpf, 
+			BigDecimal salario, LocalDate dataContratacao) {
+		
+		System.out.println("---->> Specification:");
+		
 		List<Funcionario> listaFuncionarios =  this.funcionarioService.
-													buscaFuncionarioComNomeDinamico(nome);
+				buscaFuncionarioComParametrosDinamicos(nome, cpf, salario, dataContratacao);
 		
 		listaFuncionarios.forEach(funcionario -> {
 			System.out.println("ID :" + funcionario.getId());

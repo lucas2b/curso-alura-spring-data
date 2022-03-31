@@ -1,6 +1,5 @@
 package br.com.alura.spring.data.service;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,7 +11,7 @@ import org.springframework.stereotype.Service;
 import br.com.alura.spring.data.model.Cargo;
 import br.com.alura.spring.data.repository.CargoRepository;
 
-@Service
+@Service //anotação que permite a injeção de dependência
 public class CargoService {
 	
 	private final CargoRepository cargoRepository;
